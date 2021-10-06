@@ -993,19 +993,23 @@ void uart_error_handle(app_uart_evt_t * p_event)
        //NRF_LOG_RAW_INFO("%s\r\n", data_array);
        /* TODO: Substitute '\n' in the statement below with the Modbus escape character, if 
            applicable */
+       uint8_t qbuf[3] = {0}, recv = 0;
        if ((data_array[index - 1] == '\n'))
        {
-            data_available = true;
-            data_length = index;
-            NRF_LOG_INFO("Received command copying");
-            //memcpy(uart_command,&data_array[0],index);
+            qbuf[0] = data_array[0]; qbuf[1] = data_array[1]; recv = atoi(qbuf);
+            if (recv == 18) {
+                morphyCallBrownoutHandler();
+            }
+            else if (recv == 19) {
+                morphyCallBugHandler(data_array, index);
+            }
+            else {
+                data_available = true;
+                data_length = index;
+                NRF_LOG_INFO("Received command copying");
 
-//                if (err_code != NRF_ERROR_INVALID_STATE )
-//                {
-//                    APP_ERROR_CHECK(err_code);
-//                }
-
-            index = 0;
+                index = 0;
+            }
         }
 
     }
@@ -1014,6 +1018,7 @@ void uart_error_handle(app_uart_evt_t * p_event)
 void in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     lowVoltageAlarm = true;
+    morphyCallBrownoutHandler();
 }
 
 static void gpio_init(void)
@@ -1044,7 +1049,7 @@ static void gpio_init(void)
     nrf_gpio_pin_clear(TASK_GPIO);
 }
 
-//#define UART_TEST 1
+#define UART_TEST 1
 void uart_init()
 {
     uint32_t err_code;

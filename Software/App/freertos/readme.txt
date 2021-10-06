@@ -1,6 +1,6 @@
 Implementations detail.
 
-No changes to original FreeRTOS code was made.
+The code was adapted for Morphy extension.
 Directories was reorganized to move all changed or optional items outside the original, copied code.
 That way just copying new version of FreeRTOS should give functional code.
 

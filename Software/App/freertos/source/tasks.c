@@ -337,8 +337,8 @@ typedef struct tskTaskControlBlock
 		uint8_t ucDelayAborted;
 	#endif
 
-        //ashok changes
-        volatile uint8_t morphyTaskID; //Ashok
+        //morphy changes
+        volatile uint8_t morphyTaskID; //morphy changes
 
 } tskTCB;
 
@@ -823,7 +823,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
                 //and the returned task ID is stored to morphyTaskID variable
                 //This is a blocking call, it will wait until Morphy returns
                 if (taskCharge != 0) {
-                    pxNewTCB->morphyTaskID = addTask(taskCharge); //Ashok
+                    pxNewTCB->morphyTaskID = addTask(taskCharge); //morphy changes
                 }
 
 		return xReturn;
@@ -1949,7 +1949,7 @@ BaseType_t xReturn;
 								configMINIMAL_STACK_SIZE,
 								( void * ) NULL,
 								( tskIDLE_PRIORITY | portPRIVILEGE_BIT ),
-                                                                0, //Ashok
+                                                                0, //morphy changes
 								&xIdleTaskHandle ); /*lint !e961 MISRA exception, justified as it is not a redundant explicit cast to all supported compilers. */
 	}
 	#endif /* configSUPPORT_STATIC_ALLOCATION */
@@ -2671,7 +2671,7 @@ BaseType_t xSwitchRequired = pdFALSE;
 					}
                                         /*
                                         ** Notify which task is getting executed
-                                        */ //Ashok
+                                        */ //morphy changes
                                         uint8_t energyResStatus = 0;
                                         energyResStatus = runTask(pxTCB->morphyTaskID);
                                         if (energyResStatus == 0) {
@@ -2779,10 +2779,8 @@ BaseType_t xSwitchRequired = pdFALSE;
 
         /*
         ** Check if Morphy allows to run this task only if the decision is made to switch task
-        */ //Ashok
+        */ //morphy changes
         if (xSwitchRequired == pdTRUE) {
-            //uint8_t *semArr;
-            //semArr = morphyGetSemaphores();
             uint8_t energyResStatus = 0;
             energyResStatus = runTask(pxTCB->morphyTaskID);
             if (energyResStatus == 0) {

@@ -6,6 +6,7 @@
 #include "FreeRTOS.h"
 #include "morphy.h"
 #include <string.h>
+#include "nrf_pwr_mgmt.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
@@ -23,10 +24,13 @@ OK <- 00
 OK <- 00
 15 -> reconfigCapArray
 OK <- 00
+16 -> scheduleInterrupt
+OK <- 00
+17 -> schedulePowerOn
+OK <- 00
+18 <- handleBrownOut
+19 <- handlePowerBug
 ****************************************/
-
-typedef void (*bugHandler)(uint8_t buggyTaskID);
-typedef void (*brownoutHandler)();
 bugHandler bugH;
 brownoutHandler boH; 
 volatile uint8_t currentTaskBug = 0;
@@ -37,11 +41,6 @@ static uint16_t taskStartVoltage = 0;
 static uint16_t taskEndVoltage = 0;
 static uint8_t currTaskID = 0;
 
-typedef struct {
-    uint8_t taskID;
-    uint16_t tCharge;
-    bool semValue;
-}tskPwrMap_t;
 tskPwrMap_t taskPwrMap[MAX_MORPHY_TASK];
 
 bool initMorphy()
@@ -50,6 +49,7 @@ bool initMorphy()
         taskPwrMap[i].semValue = 0;
         taskPwrMap[i].tCharge = 0;
         taskPwrMap[i].taskID = 0;
+        taskPwrMap[i].taskBug = false;
     }
     charge_monitor_timer();
 }
@@ -237,45 +237,69 @@ bool reconfigCapArray(uint8_t noOfCaps, bool paraConf)
 
 bool scheduleInterrupt(uint16_t timeout)
 {
-    bool retVal = false;
+    uint8_t alrmV[5] = {0};
+    int retVal = -1;
+    uint8_t cmd[15] = "16,";
+    uint8_t resp[10] = {0}, dataSize = 0;
 
-    //retVal = uart_tx_data(alarm_v);
-    return retVal;
+    uint8_t bufLen = sprintf(alrmV, "%d", timeout);
+    strcat(cmd, alrmV);
+    bufLen = bufLen+3;
+    cmd[bufLen] = 0x0A;
+
+    NRF_LOG_INFO("%s\r\n", cmd);
+    NRF_LOG_FLUSH();
+
+    if (uart_tx_data(cmd, bufLen)) {
+        if (uart_rx_data(resp, &dataSize)) {
+            retVal = atoi(resp);
+        }
+    }
+
+    if (retVal == 0)
+        return true;
+    else
+        return false;
 }
 
 bool schedulePowerOn(uint16_t timeout)
 {
-    bool retVal = false;
+    uint8_t alrmV[5] = {0};
+    int retVal = -1;
+    uint8_t cmd[15] = "17,";
+    uint8_t resp[10] = {0}, dataSize = 0;
 
-    //retVal = uart_tx_data(alarm_v);
-    return retVal;
+    uint8_t bufLen = sprintf(alrmV, "%d", timeout);
+    strcat(cmd, alrmV);
+    bufLen = bufLen+3;
+    cmd[bufLen] = 0x0A;
+
+    NRF_LOG_INFO("%s\r\n", cmd);
+    NRF_LOG_FLUSH();
+
+    if (uart_tx_data(cmd, bufLen)) {
+        if (uart_rx_data(resp, &dataSize)) {
+            retVal = atoi(resp);
+        }
+    }
+
+    if (retVal == 0)
+        return true;
+    else
+        return false;
 }
 
 void powerDown()
 {
     //put the device to shutdown
-    //nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_STAY_IN_SYSOFF);
+    nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_STAY_IN_SYSOFF);
 }
 
-
-uint8_t getSemaphoreNextTask(uint8_t TaskID)
+tskPwrMap_t* getSemaphores()
 {
-    bool retVal = false;
-    uint8_t semTask = 0;
-    currentTaskBug = 0;
-
-    //retVal = uart_tx_data(TaskID);
-    //while(uart_rx_data(&semTask, len) != true);
-    return semTask;
-}
-
-uint8_t* getSemaphores()
-{
-    uint8_t semArray[MAX_MORPHY_TASK] = {0};
-    currentTaskBug = 0;
-    //Comm with Morphy module
+    //Comm with Morphy module, if required
     
-    return semArray;
+    return taskPwrMap;
 }
 
 void setBugHandler(bugHandler f1)
@@ -315,24 +339,30 @@ uint8_t* getBlacklist()
     return blArray;
 }
 
+uint8_t morphyGetBugLevel()
+{
+    if (taskPwrMap[currTaskID].taskBug == true)
+        return 1;
+    else
+        return 0;
+}
+
 //This is a callbacks from other MCU
-void morphySetBugHandler()
+void morphyCallBugHandler(uint8_t *buf, uint8_t datasize)
 {
     uint8_t taskID;
 
     currentTaskBug = 1;
-    //while(uart_rx_data(&taskID, len) != true);
-    bugH(taskID);
-}
-
-uint8_t morphyGetBugLevel()
-{
-    return currentTaskBug;
+    taskPwrMap[currTaskID].taskBug = true;
+    
+    if (bugH != NULL)
+        bugH(taskID);
 }
 
 //This is a callbacks from other MCU
-void morphySetBrownoutHandler()
+void morphyCallBrownoutHandler()
 {
-    boH();
+    if (boH != NULL)
+        boH();
     vTaskEndScheduler();
 }
