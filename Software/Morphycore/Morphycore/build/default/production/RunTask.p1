@@ -1,0 +1,71 @@
+Version 4.0 HI-TECH Software Intermediate Code
+"6 RunTask.c
+[; ;RunTask.c: 6: float sampleTaskCapArray(void)
+[v _sampleTaskCapArray `(f ~T0 @X0 1 ef ]
+"7
+[; ;RunTask.c: 7: {
+{
+[e :U _sampleTaskCapArray ]
+[f ]
+"8
+[; ;RunTask.c: 8:  float vcap = 0;
+[v _vcap `f ~T0 @X0 1 a ]
+[e = _vcap -> -> 0 `i `f ]
+"11
+[; ;RunTask.c: 11:  return vcap;
+[e ) _vcap ]
+[e $UE 1  ]
+"12
+[; ;RunTask.c: 12: }
+[e :UE 1 ]
+}
+"13
+[; ;RunTask.c: 13: void isolateCapsToSeries(void)
+[v _isolateCapsToSeries `(v ~T0 @X0 1 ef ]
+"14
+[; ;RunTask.c: 14: {
+{
+[e :U _isolateCapsToSeries ]
+[f ]
+"16
+[; ;RunTask.c: 16: }
+[e :UE 2 ]
+}
+"25
+[; ;RunTask.c: 25: void delayedBrownOut()
+[v _delayedBrownOut `(v ~T0 @X0 1 ef ]
+"26
+[; ;RunTask.c: 26: {
+{
+[e :U _delayedBrownOut ]
+[f ]
+"27
+[; ;RunTask.c: 27:  float vcap = 0.0;
+[v _vcap `f ~T0 @X0 1 a ]
+[e = _vcap -> .0.0 `f ]
+"29
+[; ;RunTask.c: 29:  vcap = sampleTaskCapArray();
+[e = _vcap ( _sampleTaskCapArray ..  ]
+"31
+[; ;RunTask.c: 31:  if (vcap <= (2.7 * 1.1)) {
+[e $ ! <= -> _vcap `d * .2.7 .1.1 4  ]
+{
+"33
+[; ;RunTask.c: 33:   isolateCapsToSeries();
+[e ( _isolateCapsToSeries ..  ]
+"34
+[; ;RunTask.c: 34:  }
+}
+[e $U 5  ]
+"35
+[; ;RunTask.c: 35:  else {
+[e :U 4 ]
+{
+"37
+[; ;RunTask.c: 37:  }
+}
+[e :U 5 ]
+"38
+[; ;RunTask.c: 38: }
+[e :UE 3 ]
+}
