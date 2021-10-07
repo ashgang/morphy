@@ -1,6 +1,25 @@
-/*
-** Morphy extension
-*/
+/* 
+ * File name  : morphy.c
+ * Author     : KU Leuven
+ * Description: This file implements the morphy client library apis for the interaction with the morphy module
+ * The APIs in this module are called either within FreeRTOS for task control or from the application to interact with morphy module
+ * The APIs are adapted for nRF board and the accompanying FreeRTOS implementation
+ * This file is an extension to the FreeRTOS kernel and adapts the same license as FreeRTOS
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include <stdlib.h>
 #include "FreeRTOS.h"
@@ -29,7 +48,10 @@ OK <- 00
 17 -> schedulePowerOn
 OK <- 00
 18 <- handleBrownOut
+OK -> 00
 19 <- handlePowerBug
+20 -> runTask
+OK <- 00
 ****************************************/
 bugHandler bugH;
 brownoutHandler boH; 
@@ -56,7 +78,7 @@ bool initMorphy()
 
 bool setMaxVoltage(uint16_t max_v)
 {
-    uint8_t maxV[3] = "3.5\n";
+    uint8_t maxV[3] = "3.6\n";
     int retVal = -1;
 
     uint8_t cmd[10] = "11,";
@@ -78,7 +100,7 @@ bool setMaxVoltage(uint16_t max_v)
 
 bool setMinVoltage(uint16_t min_v)
 {
-    uint8_t maxV[3] = "3.5\n";
+    uint8_t maxV[3] = "3.0\n";
     int retVal = -1;
 
     uint8_t cmd[10] = "12,";
@@ -185,11 +207,23 @@ void charge_level_meas_timeout_handler(TimerHandle_t xTimer)
 
 uint8_t runTask(uint8_t taskID)
 {
-    float coreV = 1;//getCoreVoltage();
+    uint8_t cmd[10] = "20\n", resp[5] = {0}, dataSize = 0, retVal = 0;
+
+    if (uart_tx_data(cmd, 3)) {
+        if (uart_rx_data(resp, &dataSize)) {
+            retVal = atoi(resp);
+        }
+    }
+
+    //if (retVal == 0)
+    //    return 1;
+    //else
+    //    return 0;
+    float coreV = getCoreVoltage(); //1;
     uint16_t charge = 100 * coreV; //100mF cap, charge assigned to task is in mC, so we do this
 
     taskStartVoltage = charge;
-    
+
     if (charge > taskPwrMap[taskID-1].tCharge) {
         //start_charge_monitoring();
         currTaskID = taskID;
@@ -364,5 +398,6 @@ void morphyCallBrownoutHandler()
 {
     if (boH != NULL)
         boH();
-    vTaskEndScheduler();
+    //vTaskEndScheduler();
+    nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_STAY_IN_SYSOFF);
 }

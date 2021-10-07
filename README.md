@@ -1,2 +1,2 @@
 # morphy
-Contains morphy design files and sources codes. The Hardware folder contains the schematics of incremental versions of Morphy board and the evaluation board. The Software folder consists of MorphyCore subfolder which contains the core morphy functionality, and the reference implementation for FreeRTOS and morphy client library.
+Contains the morphy design files and sources codes. The Hardware folder contains the schematics of various versions of the Morphy board and the associated evaluation board. The Software folder consists of the MorphyCore subfolder which contains the core morphy functionality, and the reference implementation of the client library for FreeRTOS.

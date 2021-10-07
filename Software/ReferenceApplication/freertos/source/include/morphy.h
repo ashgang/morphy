@@ -1,6 +1,26 @@
-/*
-** Morphy extension
-*/
+/* 
+ * File name  : morphy.h
+ * Author     : KU Leuven
+ * Description: This file defines the morphy client library apis for the interaction with the morphy module
+ * The APIs in this module are called either within FreeRTOS for task control or from the application to interact with morphy module
+ * The APIs are adapted for nRF board and the accompanying FreeRTOS implementation
+ * This file is an extension to the FreeRTOS kernel and adapts the same license as FreeRTOS\
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #ifndef MORPHY_H
 #define MORPHY_H
 
